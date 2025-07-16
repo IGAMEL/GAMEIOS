@@ -1,0 +1,140 @@
+workflows:
+  unity-ios-release-publish:
+    name: Unity iOS Release + Publish
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+
+    environment:
+      vars:
+        UNITY_VERSION: 6000.0.47f1
+        UNITY_CHANGESET: 2ad1ed33fd3b
+        BUILD_SCRIPT: BuildiOS
+        UNITY_IOS_DIR: "iOSBuild"
+        XCODE_PROJECT: "Unity-iPhone.xcodeproj"
+        XCODE_SCHEME: "Unity-iPhone"
+        PROJECT_PATH: "StapDefence"
+      groups:
+        - unity_credentials
+        - app_store_credentials # Should include: APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY
+
+    scripts:
+      - name: Install Unity via Headless Hub
+        script: |
+          echo "🔧 Installing Unity $UNITY_VERSION via Headless Hub"
+          yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
+            -- --headless install --version $UNITY_VERSION --changeset $UNITY_CHANGESET -a arm64
+          yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
+            -- --headless install-modules --version $UNITY_VERSION -m ios -a arm64
+
+          UNITY_BIN="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
+          if [ ! -f "$UNITY_BIN" ]; then
+            echo "❌ Unity not found at $UNITY_BIN"
+            exit 1
+          fi
+          echo "✅ Unity installed at $UNITY_BIN"
+          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
+
+      - name: Activate Unity License
+        script: |
+          echo "🔐 Activating Unity license..."
+          "$UNITY_BIN" -batchmode -quit \
+            -serial "${UNITY_SERIAL?}" \
+            -username "${UNITY_EMAIL?}" \
+            -password "${UNITY_PASSWORD?}" \
+            -logFile /tmp/unity_activation.log || true
+
+          echo "📝 Activation log:"
+          cat /tmp/unity_activation.log
+
+          if grep -q "Successfully activated" /tmp/unity_activation.log || \
+             grep -q "Entitlement license activated" /tmp/unity_activation.log || \
+             grep -q "ULF license" /tmp/unity_activation.log; then
+            echo "✅ License activated"
+          else
+            echo "❌ License activation failed"
+            exit 1
+          fi
+
+      - name: Generate Xcode Project
+        script: |
+          echo "🚧 Generating Xcode project..."
+          PROJECT_FULL_PATH="$CM_BUILD_DIR/$PROJECT_PATH"
+
+          "$UNITY_BIN" -batchmode -quit \
+            -projectPath "$PROJECT_FULL_PATH" \
+            -executeMethod BuildScript.$BUILD_SCRIPT \
+            -logFile /tmp/unity_build.log
+
+          cat /tmp/unity_build.log
+
+          if grep -q "Build succeeded" /tmp/unity_build.log; then
+            echo "✅ Unity build succeeded"
+          else
+            echo "❌ Unity build failed"
+            exit 1
+          fi
+
+      - name: Build IPA (App Store signing)
+        script: |
+          IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
+          cd "$IOS_DIR"
+
+          echo "📁 Checking for Xcode project..."
+          if [ ! -d "$XCODE_PROJECT" ]; then
+            echo "❌ Xcode project not found: $XCODE_PROJECT"
+            exit 1
+          fi
+
+          echo "🧾 Creating export_options.plist for App Store..."
+          cat <<EOF > export_options.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>uploadBitcode</key>
+            <true/>
+            <key>compileBitcode</key>
+            <true/>
+            <key>destination</key>
+            <string>export</string>
+          </dict>
+          </plist>
+          EOF
+
+          echo "📦 Building .ipa file for App Store..."
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME" \
+            --export-options-plist export_options.plist
+
+          IPA_PATH="$(find . -name '*.ipa' | head -n 1)"
+          if [ -f "$IPA_PATH" ]; then
+            echo "✅ IPA created: $IPA_PATH"
+          else
+            echo "❌ IPA not created"
+            exit 1
+          fi
+
+      - name: Upload to App Store
+        script: |
+          echo "🚀 Uploading .ipa to App Store..."
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA_PATH" \
+            --apiKey "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --verbose
+
+      - name: Return Unity License
+        script: |
+          echo "♻️ Returning Unity license..."
+          "$UNITY_BIN" -batchmode -quit -returnlicense || true
+          echo "🔓 License returned"
+
+    artifacts:
+      - "**/*.ipa"
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
