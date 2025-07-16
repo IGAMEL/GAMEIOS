@@ -12,7 +12,7 @@ workflows:
         UNITY_IOS_DIR: "iOSBuild"
         XCODE_PROJECT: "Unity-iPhone.xcodeproj"
         XCODE_SCHEME: "Unity-iPhone"
-        PROJECT_PATH: "StapDefence"
+        PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
         - app_store_credentials # Should include: APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY
