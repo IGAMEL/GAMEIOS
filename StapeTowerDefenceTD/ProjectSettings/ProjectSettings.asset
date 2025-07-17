@@ -164,10 +164,10 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.Stape.StapeDefenderGame
+    Android: com.Stake.StapeDefenderGame
     Lumin: com.DefaultCompany.com.unity.template.mobile2D
     Standalone: com.DefaultCompany.com.unity.template.mobile2D
-    iPhone: com.Stape.StapeDefenderGame
+    iPhone: com.Stake.StapeDefenderGame
     tvOS: com.DefaultCompany.com.unity.template.mobile2D
   buildNumber:
     Standalone: 0
