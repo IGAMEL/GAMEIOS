@@ -18,7 +18,7 @@ workflows:
         - app_store_credentials
 
     scripts:
-      - name: 🔁 Full Clean: Unity caches & project Library
+      - name: "🔁 Full Clean: Unity caches & project Library"
         script: |
           echo "🧹 Cleaning Unity global & project caches..."
           rm -rf "$HOME/.cache/unity3d"
@@ -30,7 +30,7 @@ workflows:
           rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
           echo "✅ Clean complete"
 
-      - name: 🔍 Log installed packages before build
+      - name: "🔍 Log installed packages before build"
         script: |
           echo "📦 Installed Unity packages:"
           cat "$CM_BUILD_DIR/$PROJECT_PATH/Packages/manifest.json" || echo "manifest.json not found"
@@ -38,7 +38,7 @@ workflows:
           echo "📁 Contents of PackageCache:"
           ls -la "$CM_BUILD_DIR/$PROJECT_PATH/Library/PackageCache" || echo "No PackageCache found"
 
-      - name: Install Unity via Headless Hub
+      - name: "🔧 Install Unity via Headless Hub"
         script: |
           echo "🔧 Installing Unity $UNITY_VERSION via Headless Hub"
           yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
@@ -54,7 +54,7 @@ workflows:
           echo "✅ Unity installed at $UNITY_BIN"
           echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
 
-      - name: Activate Unity License
+      - name: "🔐 Activate Unity License"
         script: |
           echo "🔐 Activating Unity license..."
           "$UNITY_BIN" -batchmode -quit \
@@ -75,7 +75,7 @@ workflows:
             exit 1
           fi
 
-      - name: Generate Xcode Project
+      - name: "🚧 Generate Xcode Project"
         script: |
           echo "🚧 Generating Xcode project..."
           PROJECT_FULL_PATH="$CM_BUILD_DIR/$PROJECT_PATH"
@@ -94,7 +94,7 @@ workflows:
             exit 1
           fi
 
-      - name: Build IPA (App Store signing)
+      - name: "📦 Build IPA (App Store signing)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
@@ -139,7 +139,7 @@ workflows:
             exit 1
           fi
 
-      - name: Upload to App Store
+      - name: "🚀 Upload to App Store"
         script: |
           echo "🚀 Uploading .ipa to App Store..."
           xcrun altool --upload-app \
@@ -149,7 +149,7 @@ workflows:
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
             --verbose
 
-      - name: Return Unity License
+      - name: "♻️ Return Unity License"
         script: |
           echo "♻️ Returning Unity license..."
           "$UNITY_BIN" -batchmode -quit -returnlicense || true
