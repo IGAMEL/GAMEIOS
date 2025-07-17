@@ -15,7 +15,7 @@ workflows:
         PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
-        - app_store_credentials # Should include: APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_TEAM_ID
+        - app_store_credentials  # Должны быть: APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_TEAM_ID
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -94,7 +94,7 @@ workflows:
             exit 1
           fi
 
-      - name: "📦 Build IPA (Auto Signing)"
+      - name: "📦 Build IPA (via xcodebuild)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
@@ -105,15 +105,48 @@ workflows:
             exit 1
           fi
 
-          echo "📦 Building .ipa file with automatic signing..."
-          xcode-project build-ipa \
-            --project "$XCODE_PROJECT" \
-            --scheme "$XCODE_SCHEME" \
-            --export-method app-store \
-            --use-auto-signing \
-            --team-id "$APP_STORE_TEAM_ID"
+          ARCHIVE_PATH="build/ios/xcarchive/Unity-iPhone.xcarchive"
+          EXPORT_PATH="build/ios/export"
 
-          IPA_PATH="$(find . -name '*.ipa' | head -n 1)"
+          echo "📦 Archiving app with xcodebuild..."
+          xcodebuild archive \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -archivePath "$ARCHIVE_PATH" \
+            -allowProvisioningUpdates \
+            -destination generic/platform=iOS \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+          echo "📦 Exporting .ipa..."
+          mkdir -p "$EXPORT_PATH"
+
+          cat <<EOF > export_options.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>teamID</key>
+            <string>${APP_STORE_TEAM_ID}</string>
+            <key>uploadBitcode</key>
+            <true/>
+            <key>compileBitcode</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
+
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist export_options.plist
+
+          IPA_PATH="$(find "$EXPORT_PATH" -name '*.ipa' | head -n 1)"
           if [ -f "$IPA_PATH" ]; then
             echo "✅ IPA created: $IPA_PATH"
           else
