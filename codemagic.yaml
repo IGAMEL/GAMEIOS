@@ -15,7 +15,7 @@ workflows:
         PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
-        - app_store_credentials  # Должны быть: APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_TEAM_ID
+        - app_store_credentials 
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -107,21 +107,21 @@ workflows:
 
           ARCHIVE_PATH="build/ios/xcarchive/Unity-iPhone.xcarchive"
           EXPORT_PATH="build/ios/export"
+          mkdir -p "$EXPORT_PATH"
 
           echo "📦 Archiving app with xcodebuild..."
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
+            -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
-            -destination generic/platform=iOS \
+            -allowProvisioningDeviceRegistration \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
             COMPILER_INDEX_STORE_ENABLE=NO
 
           echo "📦 Exporting .ipa..."
-          mkdir -p "$EXPORT_PATH"
-
           cat <<EOF > export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
