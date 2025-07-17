@@ -1,23 +1,23 @@
 # ninja log v5
-18999	22720	7712321030851636	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libswappywrapper.so	9e4500c497c04400
-57	14386	7712320951326914	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	ed815904da21179b
-52	14597	7712320952292286	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	70eb953fbac1e9f7
-1	14813	7712320955623019	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7edf6e4a270438f1
-14398	24161	7712321049772402	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	2dc67b7b4f8bb85e
-27	15999	7712320962294533	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	8c1ce7a9ab5b1bf8
-44	18520	7712320988020795	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	3f6236482ea9ecf0
-14814	18997	7712320997658109	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2198baec77946b33
-32	20141	7712321000178709	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	e0c3737d937bf915
-14598	26455	7712321072192971	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	fcf91b62846f8284
-26513	28279	7712321081800389	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libgame.so	f6af650fe617efff
 94	25838	7715548411417704	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	ed815904da21179b
+27398	29983	7715548448981799	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libswappywrapper.so	9e4500c497c04400
+25839	30982	7715548462334438	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	70eb953fbac1e9f7
 79	25917	7715548412077831	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7edf6e4a270438f1
-111	26033	7715548412348101	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	2dc67b7b4f8bb85e
 87	26044	7715548412548153	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	8c1ce7a9ab5b1bf8
+111	26033	7715548412348101	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	2dc67b7b4f8bb85e
 102	26982	7715548422845743	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	3f6236482ea9ecf0
 26033	27397	7715548426642215	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2198baec77946b33
 20	27793	7715548431249476	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	e0c3737d937bf915
-27398	29983	7715548448981799	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libswappywrapper.so	9e4500c497c04400
-25839	30982	7715548462334438	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	70eb953fbac1e9f7
 25917	32300	7715548476432944	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	fcf91b62846f8284
 32300	32804	7715548480422399	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libgame.so	f6af650fe617efff
+60	18089	7744600445486293	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	2dc67b7b4f8bb85e
+24	18101	7744600442325333	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	ed815904da21179b
+47	18289	7744600444826142	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	7edf6e4a270438f1
+32	18725	7744600452908446	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	8c1ce7a9ab5b1bf8
+18290	21879	7744600479974798	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2198baec77946b33
+53	22639	7744600488677001	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	3f6236482ea9ecf0
+39	23827	7744600502995755	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	e0c3737d937bf915
+21880	31484	7744600558960557	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libswappywrapper.so	9e4500c497c04400
+18091	31585	7744600581586432	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	70eb953fbac1e9f7
+18101	34860	7744600614419403	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	fcf91b62846f8284
+34861	40598	7744600654859905	C:/Users/Admin/Desktop/Tactical Defence TD/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/737482s1/obj/arm64-v8a/libgame.so	f6af650fe617efff

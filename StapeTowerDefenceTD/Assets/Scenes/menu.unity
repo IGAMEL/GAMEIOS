@@ -2982,7 +2982,7 @@ MonoBehaviour:
   page1: {fileID: 955837615}
   page2: {fileID: 909157460}
   Camera: {fileID: 519420031}
-  title: {fileID: 0}
+  title: {fileID: 546250383}
   MaxLevelPlayerGot: 0
   Locked_lvl: {fileID: 2800000, guid: bdcefaec733b2834097023636c79e662, type: 3}
   Locked_Next_Page: {fileID: 2800000, guid: 061f39ffab94a594da3f2ba350158e2d, type: 3}
