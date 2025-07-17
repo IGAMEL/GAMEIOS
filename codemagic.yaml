@@ -18,6 +18,14 @@ workflows:
         - app_store_credentials # Should include: APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY
 
     scripts:
+      - name: Clear package cache (recommended for Unity template issues)
+        script: |
+          echo "🧹 Clearing Unity package cache..."
+          rm -rf "$HOME/.cache/unity3d"
+          rm -rf "$HOME/.config/unity3d"
+          rm -rf "$HOME/.local/share/unity3d"
+          echo "✅ Unity cache cleared"
+
       - name: Install Unity via Headless Hub
         script: |
           echo "🔧 Installing Unity $UNITY_VERSION via Headless Hub"
