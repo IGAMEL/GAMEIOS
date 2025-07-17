@@ -167,7 +167,7 @@ PlayerSettings:
     Android: com.Stape.StapeDefenderGame
     Lumin: com.DefaultCompany.com.unity.template.mobile2D
     Standalone: com.DefaultCompany.com.unity.template.mobile2D
-    iPhone: com.chickensquirre.road
+    iPhone: com.Stape.StapeDefenderGame
     tvOS: com.DefaultCompany.com.unity.template.mobile2D
   buildNumber:
     Standalone: 0
