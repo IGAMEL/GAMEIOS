@@ -15,7 +15,7 @@ workflows:
         PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
-        - app_store_credentials
+        - app_store_credentials # Should include: APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_ISSUER_ID, APP_STORE_TEAM_ID
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -94,7 +94,7 @@ workflows:
             exit 1
           fi
 
-      - name: "📦 Build IPA (App Store signing)"
+      - name: "📦 Build IPA (Auto Signing)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
@@ -105,31 +105,13 @@ workflows:
             exit 1
           fi
 
-          echo "🧾 Creating export_options.plist for App Store..."
-          cat <<EOF > export_options.plist
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>signingStyle</key>
-            <string>automatic</string>
-            <key>uploadBitcode</key>
-            <true/>
-            <key>compileBitcode</key>
-            <true/>
-            <key>destination</key>
-            <string>export</string>
-          </dict>
-          </plist>
-          EOF
-
-          echo "📦 Building .ipa file for App Store..."
+          echo "📦 Building .ipa file with automatic signing..."
           xcode-project build-ipa \
             --project "$XCODE_PROJECT" \
             --scheme "$XCODE_SCHEME" \
-            --export-options-plist export_options.plist
+            --export-method app-store \
+            --use-auto-signing \
+            --team-id "$APP_STORE_TEAM_ID"
 
           IPA_PATH="$(find . -name '*.ipa' | head -n 1)"
           if [ -f "$IPA_PATH" ]; then
