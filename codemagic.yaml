@@ -15,7 +15,7 @@ workflows:
         PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
-        - app_store_credentials 
+        - app_store_credentials  
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -156,12 +156,13 @@ workflows:
 
       - name: "🚀 Upload to App Store"
         script: |
-          echo "🚀 Uploading .ipa to App Store..."
+          echo "🚀 Uploading .ipa to App Store with API key..."
           xcrun altool --upload-app \
             --type ios \
             --file "$IPA_PATH" \
             --apiKey "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
             --verbose
 
       - name: "♻️ Return Unity License"
