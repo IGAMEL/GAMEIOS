@@ -15,16 +15,28 @@ workflows:
         PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
-        - app_store_credentials # Should include: APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY
+        - app_store_credentials
 
     scripts:
-      - name: Clear package cache (recommended for Unity template issues)
+      - name: 🔁 Full Clean: Unity caches & project Library
         script: |
-          echo "🧹 Clearing Unity package cache..."
+          echo "🧹 Cleaning Unity global & project caches..."
           rm -rf "$HOME/.cache/unity3d"
           rm -rf "$HOME/.config/unity3d"
           rm -rf "$HOME/.local/share/unity3d"
-          echo "✅ Unity cache cleared"
+          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library"
+          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Temp"
+          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/obj"
+          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
+          echo "✅ Clean complete"
+
+      - name: 🔍 Log installed packages before build
+        script: |
+          echo "📦 Installed Unity packages:"
+          cat "$CM_BUILD_DIR/$PROJECT_PATH/Packages/manifest.json" || echo "manifest.json not found"
+          echo "---"
+          echo "📁 Contents of PackageCache:"
+          ls -la "$CM_BUILD_DIR/$PROJECT_PATH/Library/PackageCache" || echo "No PackageCache found"
 
       - name: Install Unity via Headless Hub
         script: |
