@@ -21,6 +21,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.Stake.StapeDefenderGame"
+        automatic_signing: true  
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
