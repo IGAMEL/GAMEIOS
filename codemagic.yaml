@@ -13,16 +13,11 @@ workflows:
         XCODE_PROJECT: "Unity-iPhone.xcodeproj"
         XCODE_SCHEME: "Unity-iPhone"
         PROJECT_PATH: "StapeTowerDefenceTD"
+        BUNDLE_IDENTIFIER: "com.Stake.StapeDefenderGame"
       groups:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
-
-    code_signing:
-      automatic_code_signing:
-        apple_team_id: $APP_STORE_TEAM_ID
-        bundle_identifier: "com.Stake.StapeDefenderGame"
-        code_signing_identity: "Apple Distribution"
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -74,6 +69,9 @@ workflows:
             -allowProvisioningUpdates \
             -configuration Release \
             -derivedDataPath build/DerivedData \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
+            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_IDENTIFIER" \
             -quiet
 
           cat <<EOF > export_options.plist
