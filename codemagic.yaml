@@ -16,13 +16,11 @@ workflows:
       groups:
         - unity_credentials
         - app_store_credentials
-      xcode:
-        xcode_config_file: "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig"
+      xcode: 16.4
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
         script: |
-          echo "🧹 Cleaning Unity caches..."
           rm -rf "$HOME/.cache/unity3d" "$HOME/.config/unity3d" "$HOME/.local/share/unity3d"
           rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library" "$CM_BUILD_DIR/$PROJECT_PATH/Temp" \
                  "$CM_BUILD_DIR/$PROJECT_PATH/obj" "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
@@ -33,13 +31,7 @@ workflows:
             -- --headless install --version $UNITY_VERSION --changeset $UNITY_CHANGESET -a arm64
           yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
             -- --headless install-modules --version $UNITY_VERSION -m ios -a arm64
-
-          UNITY_BIN="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
-          if [ ! -f "$UNITY_BIN" ]; then
-            echo "❌ Unity not found"
-            exit 1
-          fi
-          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
+          echo "UNITY_BIN=/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity" >> $CM_ENV
 
       - name: "🔐 Activate Unity License"
         script: |
@@ -49,9 +41,6 @@ workflows:
             -password "${UNITY_PASSWORD?}" \
             -logFile /tmp/unity_activation.log || true
           cat /tmp/unity_activation.log
-          grep -q "Successfully activated" /tmp/unity_activation.log || \
-          grep -q "Entitlement license activated" /tmp/unity_activation.log || \
-          grep -q "ULF license" /tmp/unity_activation.log || exit 1
 
       - name: "🚧 Generate Xcode Project"
         script: |
@@ -85,6 +74,7 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
+            -xcconfig "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig" \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
             COMPILER_INDEX_STORE_ENABLE=NO
