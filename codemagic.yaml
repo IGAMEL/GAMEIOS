@@ -19,12 +19,12 @@ workflows:
         - app_store_credentials
       xcode: "16.4"
 
-    provisioning_profiles:
-      com.Stake.StapeDefenderGame: stape_provisioning_profile.mobileprovision
-
-    certificates:
-      - certificate_url: https://your-storage-url.com/ios_distribution.p12
-        certificate_password: "1234"
+    code_signing:
+      provisioning_profiles:
+        - name: stape_provisioning_profile
+          bundle_id: com.Stake.StapeDefenderGame
+      certificates:
+        - name: ios_distribution
 
     scripts:
       - name: "🔁 Clean Unity cache"
@@ -74,6 +74,7 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -configuration Release \
+            -allowProvisioningUpdates \
             -quiet
 
           xcodebuild -exportArchive \
