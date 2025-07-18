@@ -51,6 +51,10 @@ workflows:
           cat /tmp/unity_build.log | tail -n 50
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
+      - name: "📄 Copy auth.xcconfig to iOSBuild/"
+        script: |
+          cp "$CM_BUILD_DIR/$PROJECT_PATH/auth.xcconfig" "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/"
+
       - name: "🔐 Setup App Store Connect API Key"
         script: |
           mkdir -p ~/private_keys
@@ -60,9 +64,6 @@ workflows:
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
-
-          export APP_STORE_CONNECT_KEY_ID_ENV="$APP_STORE_CONNECT_KEY_IDENTIFIER"
-          export APP_STORE_CONNECT_ISSUER_ID_ENV="$APP_STORE_CONNECT_ISSUER_ID"
 
           ARCHIVE_PATH="build/ios/xcarchive/Unity-iPhone.xcarchive"
           EXPORT_PATH="build/ios/export"
@@ -74,7 +75,7 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
-            -xcconfig "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig" \
+            -xcconfig "auth.xcconfig" \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
             COMPILER_INDEX_STORE_ENABLE=NO
