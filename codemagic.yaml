@@ -126,3 +126,6 @@ workflows:
     artifacts:
       - "**/*.ipa"
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+    code_signing:
+      automatic_code_signing: true
