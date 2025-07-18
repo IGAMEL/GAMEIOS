@@ -18,13 +18,9 @@ workflows:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
-
-    code_signing:
-      provisioning_profiles:
-        - name: stape_provisioning_profile
-          bundle_id: com.Stake.StapeDefenderGame
-      certificates:
-        - name: ios_distribution
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
       - name: "🔁 Clean Unity cache"
@@ -88,12 +84,7 @@ workflows:
             <key>method</key>
             <string>app-store</string>
             <key>signingStyle</key>
-            <string>manual</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>com.Stake.StapeDefenderGame</key>
-              <string>stape_provisioning_profile</string>
-            </dict>
+            <string>automatic</string>
             <key>teamID</key>
             <string>${APP_STORE_TEAM_ID}</string>
             <key>compileBitcode</key>
