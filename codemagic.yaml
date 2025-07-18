@@ -21,6 +21,8 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.Stake.StapeDefenderGame"
+        provisioning_profiles:
+          - KeyMOB
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -69,7 +71,6 @@ workflows:
             -scheme "$XCODE_SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates \
             -configuration Release \
             -derivedDataPath build/DerivedData \
             -quiet
@@ -82,7 +83,7 @@ workflows:
             <key>method</key>
             <string>app-store</string>
             <key>signingStyle</key>
-            <string>automatic</string>
+            <string>manual</string>
             <key>teamID</key>
             <string>${APP_STORE_TEAM_ID}</string>
             <key>uploadBitcode</key>
