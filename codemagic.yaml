@@ -18,6 +18,12 @@ workflows:
         - app_store_credentials
       xcode: "16.4"
 
+    code_signing:
+      automatic_code_signing:
+        apple_team_id: $APP_STORE_TEAM_ID
+        bundle_identifier: "com.Stake.StapeDefenderGame"
+        code_signing_identity: "Apple Distribution"
+
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
         script: |
@@ -51,15 +57,6 @@ workflows:
           cat /tmp/unity_build.log | tail -n 50
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
-      - name: "📄 Generate auth.xcconfig"
-        script: |
-          echo "$AUTH_XCCONFIG" > "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig"
-
-      - name: "🔐 Setup App Store Connect API Key"
-        script: |
-          mkdir -p ~/private_keys
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
-
       - name: "📦 Build IPA (via xcodebuild)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
@@ -75,10 +72,9 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
-            -xcconfig "auth.xcconfig" \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
-            COMPILER_INDEX_STORE_ENABLE=NO
+            -configuration Release \
+            -derivedDataPath build/DerivedData \
+            -quiet
 
           cat <<EOF > export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
