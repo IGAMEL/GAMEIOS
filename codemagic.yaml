@@ -5,10 +5,9 @@ workflows:
     max_build_duration: 120
 
     environment:
-      xcode: "16.4" 
       vars:
-        UNITY_VERSION: 2022.3.10f1 
-        UNITY_CHANGESET: 2ad1ed33fd3b 
+        UNITY_VERSION: 6000.0.47f1
+        UNITY_CHANGESET: 2ad1ed33fd3b
         BUILD_SCRIPT: BuildiOS
         UNITY_IOS_DIR: "iOSBuild"
         XCODE_PROJECT: "Unity-iPhone.xcodeproj"
@@ -17,15 +16,16 @@ workflows:
       groups:
         - unity_credentials
         - app_store_credentials
+      xcode: "16.4"
 
     scripts:
-      - name: "🧹 Clean Unity cache"
+      - name: "🔁 Full Clean: Unity caches & project Library"
         script: |
           rm -rf "$HOME/.cache/unity3d" "$HOME/.config/unity3d" "$HOME/.local/share/unity3d"
           rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library" "$CM_BUILD_DIR/$PROJECT_PATH/Temp" \
                  "$CM_BUILD_DIR/$PROJECT_PATH/obj" "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
 
-      - name: "🛠 Install Unity & iOS module"
+      - name: "🔧 Install Unity"
         script: |
           yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
             -- --headless install --version $UNITY_VERSION --changeset $UNITY_CHANGESET -a arm64
@@ -33,7 +33,7 @@ workflows:
             -- --headless install-modules --version $UNITY_VERSION -m ios -a arm64
           echo "UNITY_BIN=/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity" >> $CM_ENV
 
-      - name: "🔐 Activate Unity license"
+      - name: "🔐 Activate Unity License"
         script: |
           "$UNITY_BIN" -batchmode -quit \
             -serial "${UNITY_SERIAL?}" \
@@ -48,18 +48,21 @@ workflows:
             -projectPath "$CM_BUILD_DIR/$PROJECT_PATH" \
             -executeMethod BuildScript.$BUILD_SCRIPT \
             -logFile /tmp/unity_build.log
-          tail -n 100 /tmp/unity_build.log
+          cat /tmp/unity_build.log | tail -n 50
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
-      - name: "📄 Setup Auth Key"
+      - name: "🔐 Setup App Store Connect API Key"
         script: |
           mkdir -p ~/private_keys
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
 
-      - name: "📦 Archive Xcode project"
+      - name: "📦 Build IPA (via xcodebuild)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
+
+          export APP_STORE_CONNECT_KEY_ID_ENV="$APP_STORE_CONNECT_KEY_IDENTIFIER"
+          export APP_STORE_CONNECT_ISSUER_ID_ENV="$APP_STORE_CONNECT_ISSUER_ID"
 
           ARCHIVE_PATH="build/ios/xcarchive/Unity-iPhone.xcarchive"
           EXPORT_PATH="build/ios/export"
@@ -76,8 +79,6 @@ workflows:
             DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
             COMPILER_INDEX_STORE_ENABLE=NO
 
-      - name: "📤 Export IPA"
-        script: |
           cat <<EOF > export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -98,18 +99,27 @@ workflows:
           EOF
 
           xcodebuild -exportArchive \
-            -archivePath "build/ios/xcarchive/Unity-iPhone.xcarchive" \
-            -exportPath "build/ios/export" \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
             -exportOptionsPlist export_options.plist
 
-          IPA_PATH="$(find "build/ios/export" -name '*.ipa' | head -n 1)"
+          IPA_PATH="$(find "$EXPORT_PATH" -name '*.ipa' | head -n 1)"
           if [ ! -f "$IPA_PATH" ]; then
             echo "❌ IPA not created"
             exit 1
           fi
-          echo "✅ IPA created: $IPA_PATH"
 
-      - name: "♻️ Return Unity license"
+      - name: "🚀 Upload to App Store"
+        script: |
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA_PATH" \
+            --apiKey "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID" \
+            --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            --verbose
+
+      - name: "♻️ Return Unity License"
         script: |
           "$UNITY_BIN" -batchmode -quit -returnlicense || true
 
