@@ -52,6 +52,10 @@ workflows:
           cat /tmp/unity_build.log | tail -n 50
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
+      - name: "📄 Generate auth.xcconfig"
+        script: |
+          echo "$AUTH_XCCONFIG" > "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig"
+
       - name: "📦 Build IPA (via xcodebuild)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
@@ -67,6 +71,7 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
+            -xcconfig "auth.xcconfig" \
             -configuration Release \
             -derivedDataPath build/DerivedData \
             CODE_SIGN_STYLE=Automatic \
