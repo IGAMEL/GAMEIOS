@@ -58,6 +58,19 @@ public class BuildScript
         else
         {
             Debug.Log("Build succeeded: " + report.summary.ToString());
+
+            string sourceXcconfig = Path.Combine(Directory.GetCurrentDirectory(), "iOSBuild", "auth.xcconfig");
+            string targetXcconfig = Path.Combine(buildPath, "auth.xcconfig");
+
+            try
+            {
+                File.Copy(sourceXcconfig, targetXcconfig, true);
+                Debug.Log("Copied auth.xcconfig to build output folder.");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError("Failed to copy auth.xcconfig: " + e.Message);
+            }
         }
     }
 }
