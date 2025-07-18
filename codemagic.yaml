@@ -51,9 +51,9 @@ workflows:
           cat /tmp/unity_build.log | tail -n 50
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
-      - name: "📄 Copy auth.xcconfig to iOSBuild/"
+      - name: "📄 Generate auth.xcconfig"
         script: |
-          cp "$CM_BUILD_DIR/$PROJECT_PATH/auth.xcconfig" "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/"
+          echo "$AUTH_XCCONFIG" > "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig"
 
       - name: "🔐 Setup App Store Connect API Key"
         script: |
