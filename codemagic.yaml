@@ -19,8 +19,6 @@ workflows:
         - app_store_credentials
       xcode: "16.4"
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: "com.Stake.StapeDefenderGame"
         provisioning_profiles:
           - KeyMOB
 
@@ -71,6 +69,7 @@ workflows:
             -scheme "$XCODE_SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
+            -allowProvisioningUpdates \
             -configuration Release \
             -derivedDataPath build/DerivedData \
             -quiet
@@ -84,6 +83,11 @@ workflows:
             <string>app-store</string>
             <key>signingStyle</key>
             <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.Stake.StapeDefenderGame</key>
+              <string>KeyMOB</string>
+            </dict>
             <key>teamID</key>
             <string>${APP_STORE_TEAM_ID}</string>
             <key>uploadBitcode</key>
