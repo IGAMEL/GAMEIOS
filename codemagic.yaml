@@ -18,18 +18,14 @@ workflows:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
-      ios_signing:
-        provisioning_profiles:
-          - KeyMOB
+      provisioning_profiles:
+        com.Stake.StapeDefenderGame: stape_provisioning_profile.mobileprovision
+      certificates:
+        - certificate_url: https://your-codemagic-url.com/ios_distribution.p12
+          certificate_password: "1234"
 
     scripts:
-      - name: "🔁 Full Clean: Unity caches & project Library"
-        script: |
-          rm -rf "$HOME/.cache/unity3d" "$HOME/.config/unity3d" "$HOME/.local/share/unity3d"
-          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library" "$CM_BUILD_DIR/$PROJECT_PATH/Temp" \
-                 "$CM_BUILD_DIR/$PROJECT_PATH/obj" "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
-
-      - name: "🔧 Install Unity"
+      - name: "Install Unity"
         script: |
           yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
             -- --headless install --version $UNITY_VERSION --changeset $UNITY_CHANGESET -a arm64
@@ -37,7 +33,7 @@ workflows:
             -- --headless install-modules --version $UNITY_VERSION -m ios -a arm64
           echo "UNITY_BIN=/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity" >> $CM_ENV
 
-      - name: "🔐 Activate Unity License"
+      - name: "Activate Unity License"
         script: |
           "$UNITY_BIN" -batchmode -quit \
             -serial "${UNITY_SERIAL?}" \
@@ -46,7 +42,7 @@ workflows:
             -logFile /tmp/unity_activation.log || true
           cat /tmp/unity_activation.log
 
-      - name: "🎮 Build Unity iOS Project"
+      - name: "Build Unity iOS Project"
         script: |
           "$UNITY_BIN" -batchmode -quit \
             -projectPath "$CM_BUILD_DIR/$PROJECT_PATH" \
@@ -55,7 +51,7 @@ workflows:
           cat /tmp/unity_build.log | tail -n 50
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
-      - name: "📦 Build IPA (via xcodebuild)"
+      - name: "Build IPA"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
@@ -69,12 +65,13 @@ workflows:
             -scheme "$XCODE_SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates \
             -configuration Release \
-            -derivedDataPath build/DerivedData \
             -quiet
 
-          cat <<EOF > export_options.plist
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportPath "$EXPORT_PATH" \
+            -exportOptionsPlist <(cat <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
@@ -86,22 +83,16 @@ workflows:
             <key>provisioningProfiles</key>
             <dict>
               <key>com.Stake.StapeDefenderGame</key>
-              <string>KeyMOB</string>
+              <string>stape_provisioning_profile</string>
             </dict>
             <key>teamID</key>
             <string>${APP_STORE_TEAM_ID}</string>
-            <key>uploadBitcode</key>
-            <true/>
             <key>compileBitcode</key>
             <true/>
           </dict>
           </plist>
           EOF
-
-          xcodebuild -exportArchive \
-            -archivePath "$ARCHIVE_PATH" \
-            -exportPath "$EXPORT_PATH" \
-            -exportOptionsPlist export_options.plist
+          )
 
           IPA_PATH="$(find "$EXPORT_PATH" -name '*.ipa' | head -n 1)"
           if [ ! -f "$IPA_PATH" ]; then
@@ -109,7 +100,7 @@ workflows:
             exit 1
           fi
 
-      - name: "🚀 Upload to App Store"
+      - name: "Upload to App Store"
         script: |
           xcrun altool --upload-app \
             --type ios \
@@ -119,7 +110,7 @@ workflows:
             --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
             --verbose
 
-      - name: "♻️ Return Unity License"
+      - name: "Return Unity License"
         script: |
           "$UNITY_BIN" -batchmode -quit -returnlicense || true
 
