@@ -30,14 +30,6 @@ workflows:
           rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
           echo "✅ Clean complete"
 
-      - name: "🔍 Log installed packages before build"
-        script: |
-          echo "📦 Installed Unity packages:"
-          cat "$CM_BUILD_DIR/$PROJECT_PATH/Packages/manifest.json" || echo "manifest.json not found"
-          echo "---"
-          echo "📁 Contents of PackageCache:"
-          ls -la "$CM_BUILD_DIR/$PROJECT_PATH/Library/PackageCache" || echo "No PackageCache found"
-
       - name: "🔧 Install Unity via Headless Hub"
         script: |
           echo "🔧 Installing Unity $UNITY_VERSION via Headless Hub"
@@ -94,6 +86,14 @@ workflows:
             exit 1
           fi
 
+      - name: "🔐 Setup App Store Connect API Key"
+        script: |
+          echo "🔐 Writing API Key to disk..."
+          mkdir -p ~/private_keys
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
+
+          echo "✅ API key written"
+
       - name: "📦 Build IPA (via xcodebuild)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
@@ -116,7 +116,9 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
+            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
+            -authenticationKeyPath "$HOME/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8" \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
             COMPILER_INDEX_STORE_ENABLE=NO
