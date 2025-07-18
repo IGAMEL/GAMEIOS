@@ -18,6 +18,9 @@ workflows:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
@@ -69,9 +72,6 @@ workflows:
             -allowProvisioningUpdates \
             -configuration Release \
             -derivedDataPath build/DerivedData \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
-            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_IDENTIFIER" \
             -quiet
 
           cat <<EOF > export_options.plist
