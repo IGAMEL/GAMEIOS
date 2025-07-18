@@ -15,24 +15,20 @@ workflows:
         PROJECT_PATH: "StapeTowerDefenceTD"
       groups:
         - unity_credentials
-        - app_store_credentials  
+        - app_store_credentials
+      xcode:
+        xcode_config_file: "$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR/auth.xcconfig"
 
     scripts:
       - name: "🔁 Full Clean: Unity caches & project Library"
         script: |
-          echo "🧹 Cleaning Unity global & project caches..."
-          rm -rf "$HOME/.cache/unity3d"
-          rm -rf "$HOME/.config/unity3d"
-          rm -rf "$HOME/.local/share/unity3d"
-          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library"
-          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Temp"
-          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/obj"
-          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
-          echo "✅ Clean complete"
+          echo "🧹 Cleaning Unity caches..."
+          rm -rf "$HOME/.cache/unity3d" "$HOME/.config/unity3d" "$HOME/.local/share/unity3d"
+          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library" "$CM_BUILD_DIR/$PROJECT_PATH/Temp" \
+                 "$CM_BUILD_DIR/$PROJECT_PATH/obj" "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
 
-      - name: "🔧 Install Unity via Headless Hub"
+      - name: "🔧 Install Unity"
         script: |
-          echo "🔧 Installing Unity $UNITY_VERSION via Headless Hub"
           yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
             -- --headless install --version $UNITY_VERSION --changeset $UNITY_CHANGESET -a arm64
           yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
@@ -40,90 +36,59 @@ workflows:
 
           UNITY_BIN="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
           if [ ! -f "$UNITY_BIN" ]; then
-            echo "❌ Unity not found at $UNITY_BIN"
+            echo "❌ Unity not found"
             exit 1
           fi
-          echo "✅ Unity installed at $UNITY_BIN"
           echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
 
       - name: "🔐 Activate Unity License"
         script: |
-          echo "🔐 Activating Unity license..."
           "$UNITY_BIN" -batchmode -quit \
             -serial "${UNITY_SERIAL?}" \
             -username "${UNITY_EMAIL?}" \
             -password "${UNITY_PASSWORD?}" \
             -logFile /tmp/unity_activation.log || true
-
-          echo "📝 Activation log:"
           cat /tmp/unity_activation.log
-
-          if grep -q "Successfully activated" /tmp/unity_activation.log || \
-             grep -q "Entitlement license activated" /tmp/unity_activation.log || \
-             grep -q "ULF license" /tmp/unity_activation.log; then
-            echo "✅ License activated"
-          else
-            echo "❌ License activation failed"
-            exit 1
-          fi
+          grep -q "Successfully activated" /tmp/unity_activation.log || \
+          grep -q "Entitlement license activated" /tmp/unity_activation.log || \
+          grep -q "ULF license" /tmp/unity_activation.log || exit 1
 
       - name: "🚧 Generate Xcode Project"
         script: |
-          echo "🚧 Generating Xcode project..."
-          PROJECT_FULL_PATH="$CM_BUILD_DIR/$PROJECT_PATH"
-
           "$UNITY_BIN" -batchmode -quit \
-            -projectPath "$PROJECT_FULL_PATH" \
+            -projectPath "$CM_BUILD_DIR/$PROJECT_PATH" \
             -executeMethod BuildScript.$BUILD_SCRIPT \
             -logFile /tmp/unity_build.log
-
-          cat /tmp/unity_build.log
-
-          if grep -q "Build succeeded" /tmp/unity_build.log; then
-            echo "✅ Unity build succeeded"
-          else
-            echo "❌ Unity build failed"
-            exit 1
-          fi
+          cat /tmp/unity_build.log | tail -n 50
+          grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
       - name: "🔐 Setup App Store Connect API Key"
         script: |
-          echo "🔐 Writing API Key to disk..."
           mkdir -p ~/private_keys
           echo "$APP_STORE_CONNECT_PRIVATE_KEY" > ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8
-
-          echo "✅ API key written"
 
       - name: "📦 Build IPA (via xcodebuild)"
         script: |
           IOS_DIR="$CM_BUILD_DIR/$PROJECT_PATH/$UNITY_IOS_DIR"
           cd "$IOS_DIR"
 
-          echo "📁 Checking for Xcode project..."
-          if [ ! -d "$XCODE_PROJECT" ]; then
-            echo "❌ Xcode project not found: $XCODE_PROJECT"
-            exit 1
-          fi
+          export APP_STORE_CONNECT_KEY_ID_ENV="$APP_STORE_CONNECT_KEY_IDENTIFIER"
+          export APP_STORE_CONNECT_ISSUER_ID_ENV="$APP_STORE_CONNECT_ISSUER_ID"
 
           ARCHIVE_PATH="build/ios/xcarchive/Unity-iPhone.xcarchive"
           EXPORT_PATH="build/ios/export"
           mkdir -p "$EXPORT_PATH"
 
-          echo "📦 Archiving app with xcodebuild..."
           xcodebuild archive \
             -project "$XCODE_PROJECT" \
             -scheme "$XCODE_SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
-            -authenticationKeyID "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            -authenticationKeyIssuerID "$APP_STORE_CONNECT_ISSUER_ID" \
-            -authenticationKeyPath "$HOME/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_IDENTIFIER}.p8" \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="${APP_STORE_TEAM_ID}" \
             COMPILER_INDEX_STORE_ENABLE=NO
 
-          echo "📦 Exporting .ipa..."
           cat <<EOF > export_options.plist
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -149,16 +114,13 @@ workflows:
             -exportOptionsPlist export_options.plist
 
           IPA_PATH="$(find "$EXPORT_PATH" -name '*.ipa' | head -n 1)"
-          if [ -f "$IPA_PATH" ]; then
-            echo "✅ IPA created: $IPA_PATH"
-          else
+          if [ ! -f "$IPA_PATH" ]; then
             echo "❌ IPA not created"
             exit 1
           fi
 
       - name: "🚀 Upload to App Store"
         script: |
-          echo "🚀 Uploading .ipa to App Store with API key..."
           xcrun altool --upload-app \
             --type ios \
             --file "$IPA_PATH" \
@@ -169,9 +131,7 @@ workflows:
 
       - name: "♻️ Return Unity License"
         script: |
-          echo "♻️ Returning Unity license..."
           "$UNITY_BIN" -batchmode -quit -returnlicense || true
-          echo "🔓 License returned"
 
     artifacts:
       - "**/*.ipa"
