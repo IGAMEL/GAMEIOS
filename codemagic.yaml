@@ -20,9 +20,10 @@ workflows:
           include: true
           source: true
     scripts:
+      scripts:
       - name: Build Unity project
         script: |
-          /Applications/Unity/Hub/Editor/$(UNITY_VERSION)/Unity.app/Contents/MacOS/Unity \
+          unity-editor \
             -batchmode \
             -nographics \
             -silent-crashes \
@@ -30,6 +31,7 @@ workflows:
             -projectPath . \
             -executeMethod BuildScript.BuildiOS \
             -quit
+
       - name: Install CocoaPods
         script: |
           cd iOSBuild
