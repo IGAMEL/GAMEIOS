@@ -20,10 +20,6 @@ workflows:
           include: true
           source: true
     scripts:
-      - name: Install CocoaPods
-        script: |
-          cd iOSBuild
-          pod install
       - name: Build Unity project
         script: |
           /Applications/Unity/Hub/Editor/$(UNITY_VERSION)/Unity.app/Contents/MacOS/Unity \
@@ -34,6 +30,10 @@ workflows:
             -projectPath . \
             -executeMethod BuildScript.BuildiOS \
             -quit
+      - name: Install CocoaPods
+        script: |
+          cd iOSBuild
+          pod install
       - name: Build IPA
         script: |
           xcodebuild -workspace iOSBuild/Unity-iPhone.xcworkspace \
