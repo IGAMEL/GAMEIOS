@@ -50,8 +50,3 @@ workflows:
                      -exportOptionsPlist $EXPORT_OPTIONS_PLIST
     artifacts:
       - build/ios/ipa/*.ipa
-    code_signing:
-      provisioning_profiles:
-        com.Stake.StapeDefenderGame: KeyMOB
-      certificate: app_store
-      certificate_password: $CERTIFICATE_PASSWORD
