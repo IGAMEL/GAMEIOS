@@ -12,6 +12,7 @@ workflows:
       groups:
         - app_store_credentials
       node: 18.16.0
+
     triggering:
       events:
         - push
@@ -19,8 +20,8 @@ workflows:
         - pattern: "main"
           include: true
           source: true
+
     scripts:
-      scripts:
       - name: Build Unity project
         script: |
           unity-editor \
@@ -36,6 +37,7 @@ workflows:
         script: |
           cd iOSBuild
           pod install
+
       - name: Build IPA
         script: |
           xcodebuild -workspace iOSBuild/Unity-iPhone.xcworkspace \
@@ -50,5 +52,6 @@ workflows:
                      -archivePath build/ios/xcarchive/Unity-iPhone.xcarchive \
                      -exportPath build/ios/ipa \
                      -exportOptionsPlist $EXPORT_OPTIONS_PLIST
+
     artifacts:
       - build/ios/ipa/*.ipa
