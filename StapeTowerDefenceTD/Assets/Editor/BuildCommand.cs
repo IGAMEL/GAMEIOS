@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -20,26 +20,14 @@ public class BuildScript
             Debug.LogError("No enabled scenes found in Build Settings. Build cannot proceed.");
             return;
         }
-        Debug.Log("Enabled scenes: " + string.Join(", ", enabledScenes));
 
         if (!Directory.Exists(buildPath))
         {
-            try
-            {
-                Directory.CreateDirectory(buildPath);
-                Debug.Log("Created directory: " + buildPath);
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("Failed to create directory: " + e.Message);
-                return;
-            }
-        }
-        else
-        {
-            Debug.Log("Directory already exists: " + buildPath);
+            Directory.CreateDirectory(buildPath);
+            Debug.Log("Created directory: " + buildPath);
         }
 
+        // Build
         BuildPlayerOptions buildOptions = new BuildPlayerOptions
         {
             scenes = enabledScenes,
@@ -48,29 +36,35 @@ public class BuildScript
             options = BuildOptions.None
         };
 
-        Debug.Log("Starting build with options: " + buildOptions.ToString());
+        Debug.Log("Starting build with scenes: " + string.Join(", ", enabledScenes));
 
         BuildReport report = BuildPipeline.BuildPlayer(buildOptions);
         if (report.summary.result != BuildResult.Succeeded)
         {
-            Debug.LogError("Build failed: " + report.summary.ToString());
+            Debug.LogError("❌ Build failed: " + report.summary.ToString());
+            return;
         }
-        else
+
+        Debug.Log("✅ Build succeeded: " + report.summary.ToString());
+
+        // Create xcconfig to enforce Release + disable dev code signing
+        string xcconfigPath = Path.Combine(buildPath, "CodemagicRelease.xcconfig");
+        File.WriteAllText(xcconfigPath,
+@"CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = " + System.Environment.GetEnvironmentVariable("APP_STORE_TEAM_ID") + @"
+PRODUCT_BUNDLE_IDENTIFIER = " + System.Environment.GetEnvironmentVariable("BUNDLE_IDENTIFIER") + @"
+CONFIGURATION = Release
+");
+
+        Debug.Log("✅ Generated CodemagicRelease.xcconfig");
+
+        // Optionally: copy manually prepared auth.xcconfig (if any)
+        string sourceAuth = Path.Combine(Directory.GetCurrentDirectory(), "iOSBuild", "auth.xcconfig");
+        string targetAuth = Path.Combine(buildPath, "auth.xcconfig");
+        if (File.Exists(sourceAuth))
         {
-            Debug.Log("Build succeeded: " + report.summary.ToString());
-
-            string sourceXcconfig = Path.Combine(Directory.GetCurrentDirectory(), "iOSBuild", "auth.xcconfig");
-            string targetXcconfig = Path.Combine(buildPath, "auth.xcconfig");
-
-            try
-            {
-                File.Copy(sourceXcconfig, targetXcconfig, true);
-                Debug.Log("Copied auth.xcconfig to build output folder.");
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError("Failed to copy auth.xcconfig: " + e.Message);
-            }
+            File.Copy(sourceAuth, targetAuth, true);
+            Debug.Log("📄 Copied custom auth.xcconfig.");
         }
     }
 }
