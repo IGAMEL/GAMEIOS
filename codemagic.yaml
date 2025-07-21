@@ -6,8 +6,8 @@ workflows:
 
     environment:
       vars:
-        UNITY_VERSION: 2022.3.21f1
-        UNITY_CHANGESET: d8bbd3a040ba
+        UNITY_VERSION: 6000.1.5f1
+        UNITY_CHANGESET: 2ad1ed33fd3b
         BUILD_SCRIPT: BuildiOS
         UNITY_IOS_DIR: "iOSBuild"
         XCODE_PROJECT: "Unity-iPhone.xcodeproj"
@@ -23,13 +23,19 @@ workflows:
         bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
-      - name: 🔧 Install Unity Editor
+      - name: 🔁 Full Clean
         script: |
-          echo "Installing Unity $UNITY_VERSION ..."
-          yes Y | unityhub install --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" --module ios
-          UNITY_BIN="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
-          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
-          ls -la "$UNITY_BIN"
+          rm -rf "$HOME/.cache/unity3d" "$HOME/.config/unity3d" "$HOME/.local/share/unity3d"
+          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library" "$CM_BUILD_DIR/$PROJECT_PATH/Temp" \
+                 "$CM_BUILD_DIR/$PROJECT_PATH/obj" "$CM_BUILD_DIR/$PROJECT_PATH/Packages/PackageCache"
+
+      - name: 🔧 Install Unity
+        script: |
+          yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
+            -- --headless install --version $UNITY_VERSION --changeset $UNITY_CHANGESET -a arm64
+          yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
+            -- --headless install-modules --version $UNITY_VERSION -m ios -a arm64
+          echo "UNITY_BIN=/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity" >> $CM_ENV
 
       - name: 🔐 Activate Unity License
         script: |
@@ -82,9 +88,9 @@ workflows:
             <key>teamID</key>
             <string>${APP_STORE_TEAM_ID}</string>
             <key>uploadBitcode</key>
-            <false/>
+            <true/>
             <key>compileBitcode</key>
-            <false/>
+            <true/>
           </dict>
           </plist>
           EOF
