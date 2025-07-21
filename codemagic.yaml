@@ -21,8 +21,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.Stake.StapeDefenderGame"
-        provisioning_profile_name: "KeyMOB"
-        certificate_name: "app_store_keyp12"
 
     scripts:
       - name: 🔁 Full Clean
