@@ -21,6 +21,7 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: "com.Stake.StapeDefenderGame"
+        team_id: $APP_STORE_TEAM_ID
 
     scripts:
       - name: 🔁 Full Clean
