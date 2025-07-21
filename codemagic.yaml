@@ -19,9 +19,10 @@ workflows:
         - app_store_credentials
       xcode: "16.4"
       cocoapods: default
-      signing:
-        type: automatic
-        bundle_identifier: "com.Stake.StapeDefenderGame"
+
+    signing:
+      type: automatic
+      bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
       - name: 🔁 Full Clean
