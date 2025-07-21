@@ -6,7 +6,7 @@ workflows:
 
     environment:
       vars:
-        UNITY_VERSION: 6000.1.5f1
+        UNITY_VERSION: 2022.3.21f1
         BUILD_SCRIPT: BuildiOS
         UNITY_IOS_DIR: "iOSBuild"
         XCODE_PROJECT: "Unity-iPhone.xcodeproj"
