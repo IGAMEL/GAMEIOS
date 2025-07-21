@@ -18,8 +18,9 @@ workflows:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
-      ios_signing:
-        distribution_type: app_store
+      cocoapods: default
+      signing:
+        type: automatic
         bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
@@ -72,9 +73,7 @@ workflows:
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
             -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
             -configuration Release \
-            -derivedDataPath build/DerivedData \
             -quiet
 
           cat <<EOF > "$EXPORT_OPTIONS_PLIST"
