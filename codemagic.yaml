@@ -6,7 +6,7 @@ workflows:
 
     environment:
       vars:
-        UNITY_VERSION: 6000.0.47f1
+        UNITY_VERSION: 6000.1.5f1
         UNITY_CHANGESET: 2ad1ed33fd3b
         BUILD_SCRIPT: BuildiOS
         UNITY_IOS_DIR: "iOSBuild"
@@ -18,11 +18,9 @@ workflows:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
-      cocoapods: default
-
-    signing:
-      type: automatic
-      bundle_identifier: "com.Stake.StapeDefenderGame"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
       - name: 🔁 Full Clean
@@ -73,9 +71,13 @@ workflows:
             -scheme "$XCODE_SCHEME" \
             -archivePath "$ARCHIVE_PATH" \
             -destination "generic/platform=iOS" \
-            -allowProvisioningUpdates \
             -configuration Release \
-            -quiet
+            -allowProvisioningUpdates \
+            -allowProvisioningDeviceRegistration \
+            -quiet \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM=$APP_STORE_TEAM_ID \
+            PRODUCT_BUNDLE_IDENTIFIER=$BUNDLE_IDENTIFIER
 
           cat <<EOF > "$EXPORT_OPTIONS_PLIST"
           <?xml version="1.0" encoding="UTF-8"?>
