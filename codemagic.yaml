@@ -7,6 +7,7 @@ workflows:
     environment:
       vars:
         UNITY_VERSION: 2022.3.21f1
+        UNITY_CHANGESET: d8bbd3a040ba
         BUILD_SCRIPT: BuildiOS
         UNITY_IOS_DIR: "iOSBuild"
         XCODE_PROJECT: "Unity-iPhone.xcodeproj"
@@ -22,15 +23,16 @@ workflows:
         bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
-      - name: 🔁 Clean Project
+      - name: 🔧 Install Unity Editor
         script: |
-          rm -rf "$CM_BUILD_DIR/$PROJECT_PATH/Library" "$CM_BUILD_DIR/$PROJECT_PATH/Temp"
+          echo "Installing Unity $UNITY_VERSION ..."
+          yes Y | unityhub install --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" --module ios
+          UNITY_BIN="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
+          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
+          ls -la "$UNITY_BIN"
 
       - name: 🔐 Activate Unity License
         script: |
-          UNITY_BIN="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app/Contents/MacOS/Unity"
-          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
-
           "$UNITY_BIN" -batchmode -quit \
             -serial "${UNITY_SERIAL?}" \
             -username "${UNITY_EMAIL?}" \
