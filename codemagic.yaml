@@ -18,9 +18,6 @@ workflows:
         - unity_credentials
         - app_store_credentials
       xcode: "16.4"
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: "com.Stake.StapeDefenderGame"
 
     scripts:
       - name: 🔁 Full Clean
@@ -52,7 +49,7 @@ workflows:
             -projectPath "$CM_BUILD_DIR/$PROJECT_PATH" \
             -executeMethod BuildScript.$BUILD_SCRIPT \
             -logFile /tmp/unity_build.log
-          cat /tmp/unity_build.log | tail -n 50
+          tail -n 50 /tmp/unity_build.log
           grep -q "Build succeeded" /tmp/unity_build.log || exit 1
 
       - name: 📦 Build IPA
@@ -76,8 +73,8 @@ workflows:
             -allowProvisioningDeviceRegistration \
             -quiet \
             CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM=$APP_STORE_TEAM_ID \
-            PRODUCT_BUNDLE_IDENTIFIER=$BUNDLE_IDENTIFIER
+            DEVELOPMENT_TEAM="$APP_STORE_TEAM_ID" \
+            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_IDENTIFIER"
 
           cat <<EOF > "$EXPORT_OPTIONS_PLIST"
           <?xml version="1.0" encoding="UTF-8"?>
