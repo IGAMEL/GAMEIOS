@@ -75,7 +75,8 @@ workflows:
             -allowProvisioningUpdates \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$APP_STORE_TEAM_ID" \
-            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_IDENTIFIER"
+            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_IDENTIFIER" \
+            CODE_SIGN_IDENTITY="Apple Distribution"
 
           cat <<EOF > "$EXPORT_OPTIONS_PLIST"
           <?xml version="1.0" encoding="UTF-8"?>
